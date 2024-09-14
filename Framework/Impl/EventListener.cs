@@ -2,7 +2,7 @@
 
 namespace Framework.Impl;
 
-public class EventListener<TReadModel> where TReadModel : class
+public class EventListener<TReadModel> : IEventListener where TReadModel : class
 {
     private readonly IReadRepository<TReadModel> _readRepository;
 

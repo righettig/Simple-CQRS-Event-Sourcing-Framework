@@ -2,19 +2,19 @@
 
 namespace Domain.Read.Queries.Handlers;
 
-public class ProductQueryHandler(ProductReadRepository readRepository) :
+public class ProductQueryHandler(IReadRepository<ProductReadModel> readRepository) :
     IQueryHandler<GetLowPricesProducts, IEnumerable<ProductReadModel>>,
     IQueryHandler<GetHighPricesProducts, IEnumerable<ProductReadModel>>
 {
-    private readonly ProductReadRepository readRepository = readRepository;
+    private readonly IReadRepository<ProductReadModel> readRepository = readRepository;
 
     public IEnumerable<ProductReadModel> Handle(GetLowPricesProducts query)
     {
-        return readRepository.Products.Where(x => x.Price <= query.Price);
+        return readRepository.Entities.Where(x => x.Price <= query.Price);
     }
 
     public IEnumerable<ProductReadModel> Handle(GetHighPricesProducts query)
     {
-        return readRepository.Products.Where(x => x.Price > query.Price);
+        return readRepository.Entities.Where(x => x.Price > query.Price);
     }
 }

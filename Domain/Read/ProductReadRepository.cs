@@ -6,7 +6,7 @@ public class ProductReadRepository : IReadRepository<ProductReadModel>
 {
     private readonly List<ProductReadModel> products = [];
 
-    public IQueryable<ProductReadModel> Products => products.AsQueryable();
+    public IQueryable<ProductReadModel> Entities => products.AsQueryable();
 
     public void Add(ProductReadModel productReadModel)
     {

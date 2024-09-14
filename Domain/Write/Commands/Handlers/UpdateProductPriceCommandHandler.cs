@@ -4,7 +4,7 @@ using Framework.Impl;
 namespace Domain.Write.Commands.Handlers;
 
 public class UpdateProductPriceCommandHandler(AggregateRepository<ProductAggregate> aggregateRepository)
-    : CommandHandlerBase<UpdateProductPriceCommand, ProductAggregate>(aggregateRepository)
+    : CommandHandlerBase<UpdateProductPriceCommand, ProductAggregate>(aggregateRepository), ICommandHandler<UpdateProductPriceCommand>
 {
     protected override void ProcessCommand(UpdateProductPriceCommand command, ProductAggregate aggregate)
     {
