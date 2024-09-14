@@ -12,10 +12,11 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
     {
         eventStore.OnEventsAdded += events =>
         {
-            foreach (var e in events)
-            {
-                ExecuteHandlers(e);
-            }
+            var tasks = events
+                .Select(@event => Task.Run(() => ExecuteHandlers(@event)))
+                .ToArray();
+
+            Task.WaitAll(tasks);
 
             // Dump data after processing events
             _readRepository.DumpData();

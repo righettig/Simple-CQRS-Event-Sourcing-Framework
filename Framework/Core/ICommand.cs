@@ -1,6 +1,8 @@
-﻿namespace Framework.Core;
+﻿using MediatR;
 
-public interface ICommand
+namespace Framework.Core;
+
+public interface ICommand : IRequest
 {
     public Guid Id { get; }
 }

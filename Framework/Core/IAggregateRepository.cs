@@ -2,8 +2,6 @@
 
 public interface IAggregateRepository<TAggregate> where TAggregate : IAggregateRoot
 {
-    void Add(TAggregate aggregate);
-    void AddEvents(Guid id, IReadOnlyList<IEvent> events);
-    TAggregate FindById(Guid id);
-    void Remove(Guid id);
+    TAggregate GetById(Guid id);
+    void Save(TAggregate aggregate);
 }

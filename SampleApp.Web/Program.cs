@@ -13,6 +13,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // CQRS - Event Sourcing Framework
+builder.Services.AddMediatR(cfg =>
+{
+    // Register all handlers from the assembly where your command/query handlers are defined
+    cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
+});
+
 builder.Services.AddSingleton<IEventStore, EventStore>();
 
 builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
