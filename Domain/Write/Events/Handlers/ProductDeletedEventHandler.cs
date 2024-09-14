@@ -5,7 +5,7 @@ using Framework.Impl;
 namespace Domain.Write.Events.Handlers;
 
 public class ProductDeletedEventHandler(IReadRepository<ProductReadModel> readRepository) :
-    EventHandlerBase<ProductDeletedEvent, ProductReadModel>(readRepository)
+    EventHandlerBase<ProductDeletedEvent, ProductReadModel>(readRepository), IEventHandler<ProductDeletedEvent>
 {
     public override void Handle(ProductDeletedEvent @event)
     {

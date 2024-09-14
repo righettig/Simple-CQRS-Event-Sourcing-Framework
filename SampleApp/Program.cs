@@ -17,28 +17,34 @@ var eventHandler1 = new ProductCreatedEventHandler(readRepository);
 var eventHandler2 = new ProductPriceUpdatedEventHandler(readRepository);
 var eventHandler3 = new ProductDeletedEventHandler(readRepository);
 
-eventStore.OnEventsAdded += (events) =>
-{
-    foreach (var e in events)
-    {
-        switch (e)
-        {
-            case ProductCreatedEvent @event:
-                eventHandler1.Handle(@event);
-                break;
+//eventStore.OnEventsAdded += (events) =>
+//{
+//    foreach (var e in events)
+//    {
+//        switch (e)
+//        {
+//            case ProductCreatedEvent @event:
+//                eventHandler1.Handle(@event);
+//                break;
 
-            case ProductPriceUpdatedEvent @event:
-                eventHandler2.Handle(@event);
-                break;
+//            case ProductPriceUpdatedEvent @event:
+//                eventHandler2.Handle(@event);
+//                break;
 
-            case ProductDeletedEvent @event:
-                eventHandler3.Handle(@event);
-                break;
-        }
-    }
+//            case ProductDeletedEvent @event:
+//                eventHandler3.Handle(@event);
+//                break;
+//        }
+//    }
 
-    readRepository.DumpData();
-};
+//    readRepository.DumpData();
+//};
+
+var eventListener = new EventListener<ProductReadModel>(eventStore, readRepository);
+
+eventListener.Bind<ProductCreatedEvent, ProductCreatedEventHandler>();
+eventListener.Bind<ProductPriceUpdatedEvent, ProductPriceUpdatedEventHandler>();
+eventListener.Bind<ProductDeletedEvent, ProductDeletedEventHandler>();
 
 // Write side
 var aggregateRepository = new AggregateRepository<ProductAggregate>(eventStore);

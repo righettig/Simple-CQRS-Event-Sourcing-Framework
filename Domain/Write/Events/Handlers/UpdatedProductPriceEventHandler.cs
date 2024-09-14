@@ -5,7 +5,7 @@ using Framework.Impl;
 namespace Domain.Write.Events.Handlers;
 
 public class ProductPriceUpdatedEventHandler(IReadRepository<ProductReadModel> readRepository) :
-    EventHandlerBase<ProductPriceUpdatedEvent, ProductReadModel>(readRepository)
+    EventHandlerBase<ProductPriceUpdatedEvent, ProductReadModel>(readRepository), IEventHandler<ProductPriceUpdatedEvent>
 {
     public override void Handle(ProductPriceUpdatedEvent @event)
     {
