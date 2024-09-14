@@ -2,29 +2,25 @@
 
 namespace Framework.Impl;
 
-public class AggregateRepository<TAggregate>(IEventStore eventStore) : IAggregateRepository<TAggregate> where TAggregate : IAggregateRoot
+public class AggregateRepository<TAggregate>(IEventStore eventStore) : IAggregateRepository<TAggregate> 
+    where TAggregate : IAggregateRoot, new()
 {
     private readonly IEventStore eventStore = eventStore;
-    private readonly Dictionary<Guid, TAggregate> products = [];
 
-    public TAggregate FindById(Guid id)
+    // Load events from the Event Store and reconstruct the aggregate
+    public TAggregate GetById(Guid id)
     {
-        products.TryGetValue(id, out TAggregate result);
-        return result;
+        var aggregate = new TAggregate() { Id = id };
+        var events = eventStore.GetEvents(id);
+        aggregate.LoadFromHistory(events);
+        return aggregate;
     }
 
-    public void Remove(Guid id)
+    // Save new events to the Event Store
+    public void Save(TAggregate aggregate) 
     {
-        products.Remove(id);
-    }
-
-    public void Add(TAggregate aggregate)
-    {
-        products[aggregate.Id] = aggregate;
-    }
-
-    public void AddEvents(Guid id, IReadOnlyList<IEvent> events)
-    {
-        eventStore.AddEvents(id, events);
+        var events = aggregate.GetUncommittedEvents();
+        eventStore.AddEvents(aggregate.Id, events);
+        aggregate.MarkEventsAsCommitted();
     }
 }

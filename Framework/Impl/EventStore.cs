@@ -28,16 +28,18 @@ public class EventStore : IEventStore
         OnEventsAdded?.Invoke(e);
     }
 
+    public IReadOnlyCollection<IEvent> GetEvents(Guid aggregateId)
+    {
+        events.TryGetValue(aggregateId, out var aggregateEvents);
+
+        return (aggregateEvents ?? []).AsReadOnly();
+    }
+
     public void DumpEvents() // Debug
     {
         foreach (var aggregateId in events.Keys)
         {
             events[aggregateId].ToList().ForEach(x => Console.WriteLine($"AggregateId: {aggregateId}, ${x.GetType()}"));
         }
-    }
-
-    public IEnumerable<IEvent> GetEvents(Guid aggregateId)
-    {
-        return events[aggregateId].AsReadOnly();
     }
 }

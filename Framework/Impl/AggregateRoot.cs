@@ -3,9 +3,11 @@ using System.Reflection;
 
 namespace Framework.Impl;
 
-public abstract class AggregateRoot
+public abstract class AggregateRoot : IAggregateRoot
 {
     public Guid Id { get; init; }
+
+    public IReadOnlyList<IEvent> GetUncommittedEvents() => Events.AsReadOnly();
 
     protected List<IEvent> Events { get; private set; } = [];
 
@@ -13,12 +15,15 @@ public abstract class AggregateRoot
     {
     }
 
-    public IReadOnlyList<IEvent> GetUncommittedEvents() => Events.AsReadOnly();
-
-    public void MarkEventsAsCommitted()
+    public void LoadFromHistory(IEnumerable<IEvent> events)
     {
-        Events.Clear();
+        foreach (var @event in events)
+        {
+            ApplyEvent(@event);
+        }
     }
+
+    public void MarkEventsAsCommitted() => Events.Clear();
 
     protected void RaiseEvent(IEvent @event)
     {

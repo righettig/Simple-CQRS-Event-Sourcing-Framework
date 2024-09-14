@@ -7,7 +7,7 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
     where TCommand : ICommand
     where TAggregate : IAggregateRoot, new()
 {
-    private IAggregateRepository<TAggregate> aggregateRepository;
+    private readonly IAggregateRepository<TAggregate> aggregateRepository;
 
     public CommandHandlerBase(IAggregateRepository<TAggregate> aggregateRepository)
     {
@@ -16,20 +16,11 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
 
     public Task Handle(TCommand command, CancellationToken cancellationToken)
     {
-        var aggregate = aggregateRepository.FindById(command.Id);
-
-        if (aggregate == null)
-        {
-            aggregate = new TAggregate() { Id = command.Id };
-
-            aggregateRepository.Add(aggregate);
-        }
+        var aggregate = aggregateRepository.GetById(command.Id);
 
         ProcessCommand(command, aggregate);
 
-        var events = aggregate.GetUncommittedEvents();
-        aggregateRepository.AddEvents(aggregate.Id, events);
-        aggregate.MarkEventsAsCommitted();
+        aggregateRepository.Save(aggregate);
 
         return Task.CompletedTask;
     }
