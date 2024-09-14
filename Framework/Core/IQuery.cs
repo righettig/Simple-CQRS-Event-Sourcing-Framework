@@ -1,5 +1,7 @@
-﻿namespace Framework.Core;
+﻿using MediatR;
 
-public interface IQuery
+namespace Framework.Core;
+
+public interface IQuery<TResponse> : IRequest<TResponse>
 {
 }

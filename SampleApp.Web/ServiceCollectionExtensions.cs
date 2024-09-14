@@ -1,5 +1,4 @@
-﻿using Domain.Write.Commands.Handlers;
-using Framework.Core;
+﻿using Framework.Core;
 using System.Reflection;
 
 namespace SampleApp.Web;
@@ -11,14 +10,6 @@ public static class ServiceCollectionExtensions
         // Register Event Handlers
         var eventHandlerType = typeof(IEventHandler<>);
         RegisterGenericHandlers(services, assembly, eventHandlerType);
-
-        // Register Command Handlers
-        //var commandHandlerType = typeof(ICommandHandler<>);
-        //RegisterGenericHandlers(services, assembly, commandHandlerType);
-
-        // Register Command Handlers
-        var queryHandlerType = typeof(IQueryHandler<,>);
-        RegisterGenericHandlers(services, assembly, queryHandlerType);
     }
 
     private static void RegisterGenericHandlers(IServiceCollection services, Assembly assembly, Type handlerType)

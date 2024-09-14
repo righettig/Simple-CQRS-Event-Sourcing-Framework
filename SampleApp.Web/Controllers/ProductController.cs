@@ -3,58 +3,32 @@ using Domain.Write.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SampleApp.Web.Controllers
+namespace SampleApp.Web.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class ProductController(IMediator mediator) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductController : ControllerBase
+    private readonly IMediator _mediator = mediator;
+
+    [HttpPost]
+    public async Task<IActionResult> CreateProduct() 
     {
-        //private readonly ICommandHandler<CreateProductCommand> createProductCommandHandler;
-        //private readonly ICommandHandler<UpdateProductPriceCommand> updateProductPriceCommandHandler;
-        //private readonly ICommandHandler<DeleteProductCommand> deleteProductCommandHandler;
+        var productId = Guid.NewGuid();
+        var command = new CreateProductCommand(productId, "product1", 100);
 
-        //private readonly IQueryHandler<GetLowPricesProducts, IEnumerable<ProductReadModel>> queryHandler;
+        await _mediator.Send(command);
 
-        //public ProductController(
-        //    ICommandHandler<CreateProductCommand> createProductCommandHandler,
-        //    ICommandHandler<UpdateProductPriceCommand> updateProductPriceCommandHandler,
-        //    ICommandHandler<DeleteProductCommand> deleteProductCommandHandler,
-        //    IQueryHandler<GetLowPricesProducts, IEnumerable<ProductReadModel>> queryHandler)
-        //{
-        //    this.createProductCommandHandler = createProductCommandHandler;
-        //    this.updateProductPriceCommandHandler = updateProductPriceCommandHandler;
-        //    this.deleteProductCommandHandler = deleteProductCommandHandler;
-        //    this.queryHandler = queryHandler;
-        //}
+        return Ok(productId);
+    }
 
-        private readonly IMediator _mediator;
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetProductById(Guid id)
+    {
+        var query = new GetLowPricesProducts(100);
 
-        public ProductController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+        var result = await _mediator.Send(query);
 
-        [HttpPost]
-        public IActionResult CreateProduct() 
-        {
-            var productId = Guid.NewGuid();
-            var command = new CreateProductCommand(productId, "product1", 100);
-
-            //createProductCommandHandler.Handle(command);
-            _mediator.Send(command);
-
-            return Ok(productId);
-        }
-
-        //[HttpGet("{id:guid}")]
-        //public async Task<IActionResult> GetProductById(Guid id)
-        //{
-        //    var query = new GetLowPricesProducts(100);
-            
-        //    //var result = queryHandler.Handle(query);
-        //    var result = _mediator.Send(query);
-
-        //    return Ok(result);
-        //}
+        return Ok(result);
     }
 }
