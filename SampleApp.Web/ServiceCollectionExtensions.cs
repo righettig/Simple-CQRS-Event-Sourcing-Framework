@@ -13,8 +13,8 @@ public static class ServiceCollectionExtensions
         RegisterGenericHandlers(services, assembly, eventHandlerType);
 
         // Register Command Handlers
-        var commandHandlerType = typeof(ICommandHandler<>);
-        RegisterGenericHandlers(services, assembly, commandHandlerType);
+        //var commandHandlerType = typeof(ICommandHandler<>);
+        //RegisterGenericHandlers(services, assembly, commandHandlerType);
 
         // Register Command Handlers
         var queryHandlerType = typeof(IQueryHandler<,>);

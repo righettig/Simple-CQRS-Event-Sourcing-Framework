@@ -1,8 +1,9 @@
 ﻿using Framework.Core;
+using MediatR;
 
 namespace Framework.Impl;
 
-public abstract class CommandHandlerBase<TCommand, TAggregate>
+public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler<TCommand>
     where TCommand : ICommand
     where TAggregate : IAggregateRoot, new()
 {
@@ -13,7 +14,7 @@ public abstract class CommandHandlerBase<TCommand, TAggregate>
         this.aggregateRepository = aggregateRepository;
     }
 
-    public void Handle(TCommand command)
+    public Task Handle(TCommand command, CancellationToken cancellationToken)
     {
         var aggregate = aggregateRepository.FindById(command.Id);
 
@@ -29,6 +30,8 @@ public abstract class CommandHandlerBase<TCommand, TAggregate>
         var events = aggregate.GetUncommittedEvents();
         aggregateRepository.AddEvents(aggregate.Id, events);
         aggregate.MarkEventsAsCommitted();
+
+        return Task.CompletedTask;
     }
 
     protected abstract void ProcessCommand(TCommand command, TAggregate aggregate);

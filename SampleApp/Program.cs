@@ -58,10 +58,10 @@ var command2 = new UpdateProductPriceCommand(command1.Id, 200);
 var command3 = new CreateProductCommand(Guid.NewGuid(), "product2", 1000);
 var command4 = new DeleteProductCommand(command1.Id);
 
-handler1.Handle(command1);
-handler2.Handle(command2);
-handler1.Handle(command3);
-handler3.Handle(command4);
+handler1.Handle(command1, CancellationToken.None);
+handler2.Handle(command2, CancellationToken.None);
+handler1.Handle(command3, CancellationToken.None);
+handler3.Handle(command4, CancellationToken.None);
 
 // Queries
 var q1 = new GetLowPricesProducts(50);
