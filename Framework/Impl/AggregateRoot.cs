@@ -36,6 +36,7 @@ public abstract class AggregateRoot : IAggregateRoot
         // Use reflection to find and invoke the correct Apply method
         var applyMethod = GetType().GetMethod("Apply", BindingFlags.NonPublic | BindingFlags.Instance, [@event.GetType()]);
 
+        // TODO: perhaps I should not be forced to process events if there are not relevant for my business logic
         if (applyMethod != null)
         {
             applyMethod.Invoke(this, [@event]);

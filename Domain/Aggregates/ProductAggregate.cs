@@ -6,8 +6,10 @@ namespace Domain.Aggregates;
 
 public class ProductAggregate : AggregateRoot, IAggregateRoot
 {
-    public string Name { get; private set; }
-    public decimal Price { get; private set; }
+    // Only state that is relevant for business logic rules should be stored in the aggregate.
+    // Also consider creating a class for the CurrentState.
+    //public string Name { get; private set; }
+    //public decimal Price { get; private set; }
 
     public void CreateProduct(Guid id, string name, decimal price)
     {
@@ -24,15 +26,16 @@ public class ProductAggregate : AggregateRoot, IAggregateRoot
         RaiseEvent(new ProductDeletedEvent(id));
     }
 
+    // TODO: perhaps I should not be forced to process events if there are not relevant for my business logic
     private void Apply(ProductCreatedEvent @event)
     {
-        Name = @event.Name;
-        Price = @event.Price;
+        //Name = @event.Name;
+        //Price = @event.Price;
     }
 
     private void Apply(ProductPriceUpdatedEvent @event)
     {
-        Price = @event.Price;
+        //Price = @event.Price;
     }
 
     private void Apply(ProductDeletedEvent @event)
