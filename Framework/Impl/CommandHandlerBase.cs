@@ -16,7 +16,9 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
 
     public Task Handle(TCommand command, CancellationToken cancellationToken)
     {
-        var aggregate = aggregateRepository.GetById(command.Id);
+        Guid aggregateId = GetAggregateId(command);
+
+        var aggregate = aggregateRepository.GetById(aggregateId);
 
         ProcessCommand(command, aggregate);
 
@@ -24,6 +26,11 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
 
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Allows concrete command handlers to specify custom Guid keys
+    /// </summary>
+    protected virtual Guid GetAggregateId(TCommand command) => command.Id;
 
     protected abstract void ProcessCommand(TCommand command, TAggregate aggregate);
 }
