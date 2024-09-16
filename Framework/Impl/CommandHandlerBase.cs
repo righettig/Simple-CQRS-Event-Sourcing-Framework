@@ -30,7 +30,7 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
     /// <summary>
     /// Allows concrete command handlers to specify custom Guid keys
     /// </summary>
-    protected virtual Guid GetAggregateId(TCommand command) => command.Id;
+    protected abstract Guid GetAggregateId(TCommand command);
 
     protected abstract void ProcessCommand(TCommand command, TAggregate aggregate);
 }

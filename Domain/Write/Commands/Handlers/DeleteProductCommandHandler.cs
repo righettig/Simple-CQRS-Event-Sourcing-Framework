@@ -6,6 +6,8 @@ namespace Domain.Write.Commands.Handlers;
 public class DeleteProductCommandHandler(AggregateRepository<ProductAggregate> aggregateRepository)
     : CommandHandlerBase<DeleteProductCommand, ProductAggregate>(aggregateRepository)
 {
+    protected override Guid GetAggregateId(DeleteProductCommand command) => command.Id;
+
     protected override void ProcessCommand(DeleteProductCommand command, ProductAggregate aggregate)
     {
         aggregate.DeleteProduct(command.Id);
