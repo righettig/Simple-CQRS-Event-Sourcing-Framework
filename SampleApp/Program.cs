@@ -6,25 +6,26 @@ using Domain.Write.Commands;
 using Domain.Write.Commands.Handlers;
 using Domain.Write.Events;
 using Domain.Write.Events.Handlers;
+using EventStore.Client;
 using Framework.Impl;
 
-var eventStore = new InMemoryEventStore();
+//var eventStore = new InMemoryEventStore();
+
+var settings = EventStoreClientSettings.Create("esdb://localhost:2113?tls=false");
+var eventStoreClient = new EventStoreClient(settings);
+var eventStore = new EventStoreDb(eventStoreClient);
 
 // This is how you listen for events as they happen in real time.
 // Alternatively you can create the EventListener before any command is executed
-//eventStore.Subscribe(async (streamId, events) =>
-//{
-//    foreach (var @event in events) 
-//    {
-//        Console.WriteLine($"Event received for stream {streamId}: {@event.GetType().Name}, occurred on {@event.CreatedAt}");
-//        await Task.Delay(5000); // Simulate some asynchronous work
-//        Console.WriteLine($"Completed processing event: {@event.CreatedAt}");
-//    }
-//});
-
-//var settings = EventStoreClientSettings.Create("esdb://localhost:2113?tls=false");
-//var eventStoreClient = new EventStoreClient(settings);
-//var eventStore = new EventStoreDb(eventStoreClient);
+eventStore.Subscribe(async (streamId, events) =>
+{
+    foreach (var @event in events)
+    {
+        Console.WriteLine($"Event received for stream {streamId}: {@event.GetType().Name}, occurred on {@event.CreatedAt}");
+        await Task.Delay(5000); // Simulate some asynchronous work
+        Console.WriteLine($"Completed processing event: {@event.CreatedAt}");
+    }
+});
 
 // Write side
 var aggregateRepository = new AggregateRepository<ProductAggregate>(eventStore);
@@ -69,14 +70,16 @@ eventListener.Bind<ProductDeletedEvent, ProductDeletedEventHandler>();
 eventListener.ProcessEvents(eventStore);
 
 // Queries
-var q1 = new GetLowPricesProducts(50);
-var q2 = new GetHighPricesProducts(50);
+//var q1 = new GetLowPricesProducts(50);
+//var q2 = new GetHighPricesProducts(50);
 
-var queryHandler = new ProductQueryHandler(readRepository);
-var result1 = await queryHandler.Handle(q1, CancellationToken.None);
-var result2 = await queryHandler.Handle(q2, CancellationToken.None);
+//var queryHandler = new ProductQueryHandler(readRepository);
+//var result1 = await queryHandler.Handle(q1, CancellationToken.None);
+//var result2 = await queryHandler.Handle(q2, CancellationToken.None);
 
-Console.WriteLine();
+//Console.WriteLine();
 
-Console.WriteLine($"Query 1 results: {result1.Count()}");
-Console.WriteLine($"Query 2 results: {result2.Count()}");
+//Console.WriteLine($"Query 1 results: {result1.Count()}");
+//Console.WriteLine($"Query 2 results: {result2.Count()}");
+
+Console.ReadLine();

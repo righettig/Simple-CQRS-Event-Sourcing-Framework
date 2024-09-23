@@ -40,21 +40,49 @@ public class EventStoreDb : IEventStore
             }
         };
 
-        return events;
+        return events.AsReadOnly();
     }
 
     public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync()
     {
-        yield return ("", null);
+        // TODO: this returns ALL events. I need to filter the events to get only those created by the framework.
+        var stream = _client.ReadAllAsync(Direction.Forwards, Position.Start);
+
+        await foreach (var resolvedEvent in stream)
+        {
+            var eventType = Type.GetType(resolvedEvent.Event.EventType) ?? throw new Exception("Unknown event type");
+            var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
+            var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
+
+            yield return (resolvedEvent.Event.EventStreamId, @event);
+
+            // Simulate asynchronous behavior
+            await Task.Yield();
+        }
     }
 
     public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler) 
     {
-        throw new NotImplementedException();
+        // TODO: this returns ALL events. I need to filter the events to get only those created by the framework.
+
+        // Create a persistent subscription to the stream for notifications
+        var subscription = _client.SubscribeToAllAsync(
+            FromAll.Start,
+            async (subscription, resolvedEvent, cancellationToken) =>
+            {
+                var eventType = Type.GetType(resolvedEvent.Event.EventType) ?? throw new Exception("Unknown event type");
+                var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
+                var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
+
+                await eventHandler(resolvedEvent.Event.EventStreamId, new[] { @event });
+            });
+
+        // For simplicity, you could maintain the subscription object if needed
     }
 
     public async void DumpEvents() // Debug
     {
+        // TODO: this returns ALL events. I need to filter the events to get only those created by the framework.
         var stream = _client.ReadAllAsync(Direction.Forwards, Position.Start);
 
         await foreach (var resolvedEvent in stream)
