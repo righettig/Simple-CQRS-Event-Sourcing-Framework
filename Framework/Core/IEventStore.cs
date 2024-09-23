@@ -2,9 +2,11 @@
 
 namespace Framework.Core;
 
+public delegate void EventsAddedHandler(IEnumerable<IEvent> events);
+
 public interface IEventStore
 {
-    event EventStore.EventsAddedHandler OnEventsAdded;
+    event EventsAddedHandler OnEventsAdded;
 
     void AddEvents(Guid aggregateId, IEnumerable<IEvent> events);
     IReadOnlyCollection<IEvent> GetEvents(Guid aggregateId);

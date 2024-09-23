@@ -19,7 +19,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
 });
 
-builder.Services.AddSingleton<IEventStore, EventStore>();
+builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 
 builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 

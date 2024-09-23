@@ -8,7 +8,7 @@ using Domain.Write.Events;
 using Domain.Write.Events.Handlers;
 using Framework.Impl;
 
-var eventStore = new EventStore();
+var eventStore = new InMemoryEventStore();
 
 // Read side
 var readRepository = new ProductReadRepository();

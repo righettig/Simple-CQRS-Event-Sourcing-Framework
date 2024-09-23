@@ -2,15 +2,13 @@
 
 namespace Framework.Impl;
 
-public class EventStore : IEventStore
+public class InMemoryEventStore : IEventStore
 {
     private readonly Dictionary<Guid, List<IEvent>> events = [];
 
-    // Define a delegate and event for event subscribers
-    public delegate void EventsAddedHandler(IEnumerable<IEvent> events);
     public event EventsAddedHandler OnEventsAdded;
 
-    public EventStore()
+    public InMemoryEventStore()
     {
     }
 
