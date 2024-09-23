@@ -1,15 +1,10 @@
-﻿using Framework.Impl;
-
-namespace Framework.Core;
-
-public delegate void EventsAddedHandler(IEnumerable<IEvent> events);
+﻿namespace Framework.Core;
 
 public interface IEventStore
 {
-    event EventsAddedHandler OnEventsAdded;
-
-    void AddEvents(Guid aggregateId, IEnumerable<IEvent> events);
-    IReadOnlyCollection<IEvent> GetEvents(Guid aggregateId);
-    
+    void AddEvents(string eventStreamId, IEnumerable<IEvent> events);
+    Task<IReadOnlyCollection<IEvent>> GetEvents(string eventStreamId);
+    void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler);
+    IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync();
     void DumpEvents();
 }

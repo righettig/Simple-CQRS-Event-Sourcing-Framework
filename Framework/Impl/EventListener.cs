@@ -8,21 +8,19 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
 
     private readonly Dictionary<Type, Action<object>> _handlers = [];
 
-    public EventListener(IEventStore eventStore, IReadRepository<TReadModel> readRepository)
+    public EventListener(IReadRepository<TReadModel> readRepository)
     {
-        eventStore.OnEventsAdded += events =>
-        {
-            var tasks = events
-                .Select(@event => Task.Run(() => ExecuteHandlers(@event)))
-                .ToArray();
-
-            Task.WaitAll(tasks);
-
-            // Dump data after processing events
-            _readRepository.DumpData();
-        };
-
         _readRepository = readRepository;
+    }
+
+    public async void ProcessEvents(IEventStore eventStore) 
+    {
+        await foreach (var (eventStreamId, @event) in eventStore.GetAllEventsAsync())
+        {
+            Console.WriteLine($"Event Stream Id: {eventStreamId}, Event: {@event.GetType()}");
+
+            ExecuteHandlers(@event);
+        }
     }
 
     public void Bind<TEvent, THandler>() where THandler : IEventHandler<TEvent>

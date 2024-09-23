@@ -4,40 +4,67 @@ namespace Framework.Impl;
 
 public class InMemoryEventStore : IEventStore
 {
-    private readonly Dictionary<Guid, List<IEvent>> events = [];
-
-    public event EventsAddedHandler OnEventsAdded;
+    private readonly Dictionary<string, List<IEvent>> events = [];
+    
+    private readonly List<Func<string, IEnumerable<IEvent>, Task>> subscribers = [];
 
     public InMemoryEventStore()
     {
     }
 
-    public void AddEvents(Guid aggregateId, IEnumerable<IEvent> e)
+    public void AddEvents(string eventStreamId, IEnumerable<IEvent> e)
     {
-        if (!events.TryGetValue(aggregateId, out List<IEvent>? value))
+        if (!events.TryGetValue(eventStreamId, out List<IEvent>? value))
         {
             value = ([]);
-            events.Add(aggregateId, value);
+            events.Add(eventStreamId, value);
         }
 
-        value.AddRange(e);
+        var _events = e.ToArray(); // otherwise "e" is cleared out when executing MarkEventsAsCommitted.
+        value.AddRange(_events);
 
-        // Notify subscribers
-        OnEventsAdded?.Invoke(e);
+        Task.Run(() => NotifySubscribersAsync(eventStreamId, _events));
     }
 
-    public IReadOnlyCollection<IEvent> GetEvents(Guid aggregateId)
+    public Task<IReadOnlyCollection<IEvent>> GetEvents(string eventStreamId)
     {
-        events.TryGetValue(aggregateId, out var aggregateEvents);
+        events.TryGetValue(eventStreamId, out var aggregateEvents);
 
-        return (aggregateEvents ?? []).AsReadOnly();
+        IReadOnlyCollection<IEvent> result = (aggregateEvents ?? []).AsReadOnly();
+
+        return Task.FromResult(result);
     }
+
+    public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync()
+    {
+        foreach (var eventStream in events)
+        {
+            foreach (var eventItem in eventStream.Value)
+            {
+                yield return (eventStream.Key, eventItem);
+            }
+
+            // Simulate asynchronous behavior
+            await Task.Yield();
+        }
+    }
+
+    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler)
+    {
+        subscribers.Add(eventHandler);
+    }   
 
     public void DumpEvents() // Debug
     {
-        foreach (var aggregateId in events.Keys)
+        foreach (var eventStreamId in events.Keys)
         {
-            events[aggregateId].ToList().ForEach(x => Console.WriteLine($"AggregateId: {aggregateId}, ${x.GetType()}"));
+            events[eventStreamId].ToList().ForEach(x => Console.WriteLine($"Event Stream Id: {eventStreamId}, ${x.GetType()}"));
         }
+    }
+
+    private async Task NotifySubscribersAsync(string streamId, IEnumerable<IEvent> events)
+    {
+        var tasks = subscribers.Select(subscriber => subscriber(streamId, events));
+        await Task.WhenAll(tasks);
     }
 }

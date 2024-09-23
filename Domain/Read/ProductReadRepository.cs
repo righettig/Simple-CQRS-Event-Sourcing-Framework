@@ -32,7 +32,7 @@ public class ProductReadRepository : IReadRepository<ProductReadModel>
 
     public void SaveChanges()
     {
-        Console.WriteLine("Saving changes");
+        //Console.WriteLine("Saving changes");
     }
 
     public void DumpData()

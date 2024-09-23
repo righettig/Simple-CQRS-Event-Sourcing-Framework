@@ -14,17 +14,15 @@ public abstract class CommandHandlerBase<TCommand, TAggregate> : IRequestHandler
         this.aggregateRepository = aggregateRepository;
     }
 
-    public Task Handle(TCommand command, CancellationToken cancellationToken)
+    public async Task Handle(TCommand command, CancellationToken cancellationToken)
     {
         Guid aggregateId = GetAggregateId(command);
 
-        var aggregate = aggregateRepository.GetById(aggregateId);
+        var aggregate = await aggregateRepository.GetById(aggregateId);
 
         ProcessCommand(command, aggregate);
 
         aggregateRepository.Save(aggregate);
-
-        return Task.CompletedTask;
     }
 
     /// <summary>

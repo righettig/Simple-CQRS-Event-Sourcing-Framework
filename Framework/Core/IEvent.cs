@@ -1,5 +1,6 @@
 ﻿namespace Framework.Core;
 
-public class IEvent
+public interface IEvent
 {
+    DateTime CreatedAt { get; }
 }

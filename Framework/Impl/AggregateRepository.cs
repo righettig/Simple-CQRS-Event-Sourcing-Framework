@@ -8,10 +8,11 @@ public class AggregateRepository<TAggregate>(IEventStore eventStore) : IAggregat
     private readonly IEventStore eventStore = eventStore;
 
     // Load events from the Event Store and reconstruct the aggregate
-    public TAggregate GetById(Guid id)
+    public async Task<TAggregate> GetById(Guid id)
     {
         var aggregate = new TAggregate() { Id = id };
-        var events = eventStore.GetEvents(id);
+        var eventStreamId = GetEventStreamId(aggregate);
+        var events = await eventStore.GetEvents(eventStreamId);
         aggregate.LoadFromHistory(events);
         return aggregate;
     }
@@ -20,7 +21,10 @@ public class AggregateRepository<TAggregate>(IEventStore eventStore) : IAggregat
     public void Save(TAggregate aggregate) 
     {
         var events = aggregate.GetUncommittedEvents();
-        eventStore.AddEvents(aggregate.Id, events);
+        var eventStreamId = GetEventStreamId(aggregate);
+        eventStore.AddEvents(eventStreamId, events);
         aggregate.MarkEventsAsCommitted();
     }
+
+    private static string GetEventStreamId(TAggregate aggregate) => typeof(TAggregate).Name + "-" + aggregate.Id;
 }
