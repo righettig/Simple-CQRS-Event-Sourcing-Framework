@@ -9,7 +9,7 @@ using Framework.Impl.EventStore;
 using Framework.Web;
 
 /**
- * This project shows both write/read stack as well as projections being done in a single project
+ * This sample shows both write/read stack as well as projections being done in a single project
  */
 
 var builder = WebApplication.CreateBuilder(args);

@@ -8,7 +8,7 @@ using Framework.Impl.InMemory;
 using Framework.Web;
 
 /**
- * This project shows how to use the in-memory implementation in a web application.
+ * This sample shows how to use the in-memory implementation in a web application.
  */
 
 var builder = WebApplication.CreateBuilder(args);

@@ -6,7 +6,7 @@ using Framework.Impl;
 using Framework.Impl.EventStore;
 
 /**
- * This sample shows how events can be read in real time as they are been processed by the command handlers.
+ * This sample shows how events can be read in real time as they are being processed by the command handlers.
  */
 
 // Events are saved in the EventStore.

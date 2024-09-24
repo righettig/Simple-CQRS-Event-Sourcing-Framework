@@ -1,5 +1,4 @@
-﻿using _05_EventStoreDb_Batch_Reading_Events;
-using Domain.Read;
+﻿using Domain.Read;
 using Framework.Impl.InMemory;
 
 /*
