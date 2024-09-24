@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>_10_WebApp_EventStoreDb</RootNamespace>
+    <RootNamespace>_11_WebApp_Write_EventStoreDb</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,13 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Framework\Framework.EventStore\Framework.EventStore.csproj" />
     <ProjectReference Include="..\..\Framework\Framework.Web\Framework.Web.csproj" />
-    <ProjectReference Include="..\Domain\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Domain\Domain.Write\Domain.Write.csproj" />
   </ItemGroup>
 
 </Project>
