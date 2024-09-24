@@ -1,10 +1,6 @@
-
+# Ignore .vs folder
 /.vs
-/Domain/bin
-/Domain/obj
-/Framework/bin
-/Framework/obj
-/SampleApp/bin
-/SampleApp/obj
-/SampleApp.Web/bin
-/SampleApp.Web/obj
+
+# Ignore all /bin and /obj folders no matter where they are
+**/bin/
+**/obj/
