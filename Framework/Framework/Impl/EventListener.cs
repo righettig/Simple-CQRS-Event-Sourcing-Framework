@@ -13,6 +13,8 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
         _readRepository = readRepository;
     }
 
+    // this is using GetAllEventsAsync which does not use server-side filtering when retrieving events.
+    [Obsolete] 
     public async Task ProcessEvents(IEventStore eventStore, string prefix = "") 
     {
         await foreach (var (eventStreamId, @event) in eventStore.GetAllEventsAsync(prefix))
