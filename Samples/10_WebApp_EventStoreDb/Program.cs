@@ -39,7 +39,6 @@ builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(p
 {
     // Get the required services from the service provider
     var readRepository = provider.GetRequiredService<IReadRepository<ProductReadModel>>();
-    var eventStore = provider.GetRequiredService<IEventStore>();
 
     // Create the EventListener instance
     var eventListener = new EventListener<ProductReadModel>(readRepository);
