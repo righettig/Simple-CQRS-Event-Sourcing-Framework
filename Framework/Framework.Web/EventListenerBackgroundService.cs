@@ -3,20 +3,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace Framework.Web;
 
-public class EventListenerBackgroundService(IEventListener eventListener, IEventStore eventStore) : IHostedService
+public class EventListenerBackgroundService(IEventListener eventListener, IEventStore eventStore, string prefix = "") : BackgroundService
 {
     private readonly IEventListener _eventListener = eventListener;
     private readonly IEventStore _eventStore = eventStore;
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _eventListener.SubscribeTo(_eventStore);
+        _eventListener.SubscribeTo(_eventStore, prefix);
 
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
         return Task.CompletedTask;
     }
 }

@@ -9,7 +9,8 @@ using Framework.Impl.EventStore;
 using Framework.Web;
 
 /**
- * This sample shows both write/read stack as well as projections being done in a single project
+ * This sample shows both write/read stack as well as projections being done in a single project.
+ * The sample shows also how to process a subset of the events based on the event prefix.
  */
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +52,21 @@ builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(p
     return eventListener;
 });
 
+// The background service will process all events
 builder.Services.AddHostedService<EventListenerBackgroundService>();
+
+// The background service will only process a subset of all the events
+//builder.Services.AddHostedService(provider =>
+//{
+//    var eventListener = provider.GetRequiredService<IEventListener>();
+//    var eventStore = provider.GetRequiredService<IEventStore>();
+
+//    // events that do NOT start with "my_domain_products" will be ignored.
+//    // Events are saved with the namespace prefixed so the match is based on the class namespace.
+//    var eventListenerBackgroundService = new EventListenerBackgroundService(eventListener, eventStore, "my_domain_products");
+
+//    return eventListenerBackgroundService;
+//});
 
 var app = builder.Build();
 

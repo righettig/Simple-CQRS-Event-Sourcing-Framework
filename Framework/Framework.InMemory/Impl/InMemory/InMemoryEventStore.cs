@@ -35,7 +35,8 @@ public class InMemoryEventStore : IEventStore
         return Task.FromResult(result);
     }
 
-    public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync()
+    // TODO: prefix is not being used
+    public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync(string prefix = "")
     {
         foreach (var eventStream in events)
         {
@@ -49,7 +50,8 @@ public class InMemoryEventStore : IEventStore
         }
     }
 
-    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler)
+    // TODO: prefix is not being used
+    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "")
     {
         subscribers.Add(eventHandler);
     }

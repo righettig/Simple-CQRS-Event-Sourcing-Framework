@@ -13,9 +13,9 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
         _readRepository = readRepository;
     }
 
-    public async Task ProcessEvents(IEventStore eventStore) 
+    public async Task ProcessEvents(IEventStore eventStore, string prefix = "") 
     {
-        await foreach (var (eventStreamId, @event) in eventStore.GetAllEventsAsync())
+        await foreach (var (eventStreamId, @event) in eventStore.GetAllEventsAsync(prefix))
         {
             Console.WriteLine($"Event Stream Id: {eventStreamId}, Event: {@event.GetType()}");
 
@@ -23,7 +23,7 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
         }
     }
 
-    public void SubscribeTo(IEventStore eventStore)
+    public void SubscribeTo(IEventStore eventStore, string prefix = "")
     {
         eventStore.Subscribe(async (streamId, events) =>
         {
@@ -33,7 +33,7 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
 
                 ExecuteHandlers(@event);
             }
-        });
+        }, prefix);
     }
 
     public void Bind<TEvent, THandler>() where THandler : IEventHandler<TEvent>

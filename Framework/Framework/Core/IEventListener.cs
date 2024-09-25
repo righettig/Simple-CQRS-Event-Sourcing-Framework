@@ -3,6 +3,6 @@
 public interface IEventListener
 {
     void Bind<TEvent, THandler>() where THandler : IEventHandler<TEvent>;
-    void SubscribeTo(IEventStore eventStore);
-    Task ProcessEvents(IEventStore eventStore);
+    void SubscribeTo(IEventStore eventStore, string prefix = "");
+    Task ProcessEvents(IEventStore eventStore, string prefix = "");
 }

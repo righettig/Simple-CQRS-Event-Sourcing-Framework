@@ -31,13 +31,19 @@ public class EventStoreDb : IEventStore
         {
             await foreach (var resolvedEvent in stream)
             {
-                var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
-                var eventType = Type.GetType(resolvedEvent.Event.EventType) ?? throw new Exception("Unknown event type");
+                var eventType = Type.GetType(resolvedEvent.Event.EventType);
 
                 if (eventType != null)
                 {
+                    var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
                     var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
                     events.Add(@event);
+                }
+                else 
+                {
+                    var message = "Unknown event type: " + resolvedEvent.Event.EventType;
+                    Console.WriteLine(message);
+                    throw new Exception(message); // TODO: create ad-hoc exception
                 }
             }
         };
@@ -45,24 +51,34 @@ public class EventStoreDb : IEventStore
         return events.AsReadOnly();
     }
 
-    public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync()
+    public async IAsyncEnumerable<(string eventStreamId, IEvent @event)> GetAllEventsAsync(string prefix = "")
     {
-        // TODO: this returns ALL events. I need to filter the events to get only those created by the framework.
         var stream = _client.ReadAllAsync(Direction.Forwards, Position.Start);
 
-        //var stream = _client
-        //    .ReadAllAsync(Direction.Forwards, Position.Start)
-        //    .Where(@event => @event.OriginalStreamId.StartsWith("ProductAggregate-"));
+        if (!string.IsNullOrEmpty(prefix))
+        {
+            stream.Where(@event => @event.OriginalStreamId.StartsWith(prefix));
+        }
 
         await foreach (var resolvedEvent in stream)
         {
             if (!resolvedEvent.Event.EventType.StartsWith("$")) // skip "metadata" streams
             {
-                var eventType = Type.GetType(resolvedEvent.Event.EventType) ?? throw new Exception("Unknown event type");
-                var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
-                var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
+                var eventType = Type.GetType(resolvedEvent.Event.EventType);
 
-                yield return (resolvedEvent.Event.EventStreamId, @event);
+                if (eventType != null)
+                {
+                    var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
+                    var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
+
+                    yield return (resolvedEvent.Event.EventStreamId, @event);
+                }
+                else
+                {
+                    var message = "Unknown event type: " + resolvedEvent.Event.EventType;
+                    Console.WriteLine(message);
+                    throw new Exception(message); // TODO: create ad-hoc exception
+                }               
 
                 // Simulate asynchronous behavior
                 await Task.Yield();
@@ -70,37 +86,47 @@ public class EventStoreDb : IEventStore
         }
     }
 
-    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler)
+    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "")
     {
-        // TODO: this returns ALL events. I need to filter the events to get only those created by the framework.
+        var filterOptions = string.IsNullOrEmpty(prefix) ?
+            new SubscriptionFilterOptions(EventTypeFilter.ExcludeSystemEvents()) :
+            new SubscriptionFilterOptions(EventTypeFilter.Prefix(prefix));
 
         // Create a persistent subscription to the stream for notifications
         var subscription = _client.SubscribeToAllAsync(
             FromAll.Start,
             async (subscription, resolvedEvent, cancellationToken) =>
             {
-                if (resolvedEvent.Event.EventType.StartsWith("$")) // skip "metadata" streams
+                var eventType = Type.GetType(resolvedEvent.Event.EventType);
+                
+                if (eventType != null)
                 {
-                    return;
+                    var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
+                    var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
+
+                    await eventHandler(resolvedEvent.Event.EventStreamId, new[] { @event });
                 }
+                else
+                {
+                    var message = "Unknown event type: " + resolvedEvent.Event.EventType;
+                    Console.WriteLine(message);
 
-                var eventType = Type.GetType(resolvedEvent.Event.EventType) ?? throw new Exception("Unknown event type");
-                var eventData = Encoding.UTF8.GetString(resolvedEvent.Event.Data.Span);
-                var @event = (IEvent)JsonSerializer.Deserialize(eventData, eventType)!;
-
-                await eventHandler(resolvedEvent.Event.EventStreamId, new[] { @event });
-            });
-
-        // For simplicity, you could maintain the subscription object if needed
+                    // this kill silently an IHostedService or BackgroundService leading to further events no longer being processed
+                    //throw new Exception(message); // TODO: create ad-hoc exception
+                }
+            },
+            filterOptions: filterOptions
+        );
     }
 
-    public async void DumpEvents(string query = "") // Debug
+    public async void DumpEvents(string prefix = "") // Debug
     {
-        //var stream = _client.ReadAllAsync(Direction.Forwards, Position.Start);
+        var stream = _client.ReadAllAsync(Direction.Forwards, Position.Start);
 
-        var stream = _client
-            .ReadAllAsync(Direction.Forwards, Position.Start)
-            .Where(@event => @event.OriginalStreamId.StartsWith(query));
+        if (!string.IsNullOrEmpty(prefix))
+        {
+            stream.Where(@event => @event.OriginalStreamId.StartsWith(prefix));
+        }
 
         await foreach (var resolvedEvent in stream)
         {
