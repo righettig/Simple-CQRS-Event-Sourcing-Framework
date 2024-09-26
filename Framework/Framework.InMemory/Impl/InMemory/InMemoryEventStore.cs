@@ -50,8 +50,8 @@ public class InMemoryEventStore : IEventStore
         }
     }
 
-    // TODO: prefix is not being used
-    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "")
+    // TODO: prefix, regex are not being used
+    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "", string regex = "")
     {
         subscribers.Add(eventHandler);
     }
