@@ -86,11 +86,27 @@ public class EventStoreDb : IEventStore
         }
     }
 
-    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "")
+    public void Subscribe(Func<string, IEnumerable<IEvent>, Task> eventHandler, string prefix = "", string regex = "")
     {
-        var filterOptions = string.IsNullOrEmpty(prefix) ?
-            new SubscriptionFilterOptions(EventTypeFilter.ExcludeSystemEvents()) :
-            new SubscriptionFilterOptions(EventTypeFilter.Prefix(prefix));
+        if (!string.IsNullOrEmpty(prefix) && !string.IsNullOrEmpty(regex))
+        {
+            throw new ArgumentException($"{nameof(prefix)} and {nameof(regex)} cannot be used at the same time.");
+        }
+
+        SubscriptionFilterOptions filterOptions;
+
+        if (!string.IsNullOrEmpty(regex))
+        {
+            filterOptions = new SubscriptionFilterOptions(EventTypeFilter.RegularExpression(regex));
+        }
+        else if (!string.IsNullOrEmpty(prefix))
+        {
+            filterOptions = new SubscriptionFilterOptions(EventTypeFilter.Prefix(prefix));
+        }
+        else
+        {
+            filterOptions = new SubscriptionFilterOptions(EventTypeFilter.ExcludeSystemEvents());
+        }
 
         // Create a persistent subscription to the stream for notifications
         var subscription = _client.SubscribeToAllAsync(
