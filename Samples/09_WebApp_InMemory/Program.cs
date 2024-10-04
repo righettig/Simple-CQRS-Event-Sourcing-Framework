@@ -1,7 +1,5 @@
 using Domain.Aggregates;
 using Domain.Read;
-using Domain.Write.Events;
-using Domain.Write.Events.Handlers;
 using Framework.Core;
 using Framework.Impl;
 using Framework.Impl.InMemory;
@@ -30,21 +28,27 @@ builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 
 builder.Services.AddSingleton<AggregateRepository<ProductAggregate>>();
 builder.Services.AddSingleton<IReadRepository<ProductReadModel>, ProductReadRepository>();
-builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(provider =>
-{
-    // Get the required services from the service provider
-    var readRepository = provider.GetRequiredService<IReadRepository<ProductReadModel>>();
 
-    // Create the EventListener instance
-    var eventListener = new EventListener<ProductReadModel>(readRepository);
+// This will automatically register all events to corresponding event handlers based on convention
+// <<EVENT_NAME>>Event => <<EVENT_NAME>>EventHandler
+builder.Services.AddEventListener<ProductReadModel>(typeof(ProductReadModel).Assembly);
 
-    // Bind the event handlers
-    eventListener.Bind<ProductCreatedEvent, ProductCreatedEventHandler>();
-    eventListener.Bind<ProductPriceUpdatedEvent, ProductPriceUpdatedEventHandler>();
-    eventListener.Bind<ProductDeletedEvent, ProductDeletedEventHandler>();
-    
-    return eventListener;
-});
+// Alternatively, events can be manually bound to event handlers by doing:
+//builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(provider =>
+//{
+//    // Get the required services from the service provider
+//    var readRepository = provider.GetRequiredService<IReadRepository<ProductReadModel>>();
+
+//    // Create the EventListener instance
+//    var eventListener = new EventListener<ProductReadModel>(readRepository);
+
+//    // Bind the event handlers
+//    eventListener.Bind<ProductCreatedEvent, ProductCreatedEventHandler>();
+//    eventListener.Bind<ProductPriceUpdatedEvent, ProductPriceUpdatedEventHandler>();
+//    eventListener.Bind<ProductDeletedEvent, ProductDeletedEventHandler>();
+
+//    return eventListener;
+//});
 
 builder.Services.AddHostedService<EventListenerBackgroundService>();
 

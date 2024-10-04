@@ -33,21 +33,10 @@ builder.Services.RegisterHandlers(typeof(ProductCreatedEventHandler).Assembly);
 
 builder.Services.AddSingleton<IEventStore>(eventStore);
 builder.Services.AddSingleton<IReadRepository<ProductReadModel>, ProductReadRepository>();
-builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(provider =>
-{
-    // Get the required services from the service provider
-    var readRepository = provider.GetRequiredService<IReadRepository<ProductReadModel>>();
 
-    // Create the EventListener instance
-    var eventListener = new EventListener<ProductReadModel>(readRepository);
-
-    // Bind the event handlers
-    eventListener.Bind<ProductCreatedEvent, ProductCreatedEventHandler>();
-    eventListener.Bind<ProductPriceUpdatedEvent, ProductPriceUpdatedEventHandler>();
-    eventListener.Bind<ProductDeletedEvent, ProductDeletedEventHandler>();
-    
-    return eventListener;
-});
+builder.Services.AddEventListener<ProductReadModel>(
+    typeof(ProductCreatedEvent).Assembly, 
+    typeof(ProductCreatedEventHandler).Assembly);
 
 builder.Services.AddHostedService<EventListenerBackgroundService>();
 
