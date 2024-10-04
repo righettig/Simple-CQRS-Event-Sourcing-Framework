@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
         }
     }
 
-    public static IServiceCollection AddEventListenerBackgroundService(this IServiceCollection services, string eventPrefix)
+    public static IServiceCollection AddEventListenerBackgroundService(this IServiceCollection services, string eventPrefix = "")
     {
         services.AddHostedService(provider =>
         {

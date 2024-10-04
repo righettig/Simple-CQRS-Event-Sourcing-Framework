@@ -1,7 +1,4 @@
 using Domain.Aggregates;
-using Domain.Read;
-using Framework.Core;
-using Framework.Impl;
 using Framework.Web;
 
 /**
@@ -14,23 +11,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services
+    .AddEventStore() // use an in-memory implementation of IEventStore
+    .AddCQRS(typeof(ProductAggregate))
+    .WithEvents(); // .WithEvents("airo_purchase");
+
 // CQRS - Event Sourcing Framework
-builder.Services.AddMediatR(cfg =>
-{
-    // Register all handlers from the assembly where your command/query handlers are defined
-    cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
-});
+//builder.Services.AddMediatR(cfg =>
+//{
+//    // Register all handlers from the assembly where your command/query handlers are defined
+//    cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
+//});
 
-builder.Services.AddEventStore(); // use an in-memory implementation of IEventStore
+//builder.Services.AddEventStore(); // use an in-memory implementation of IEventStore
 
-builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
+//builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 
-builder.Services.AddSingleton<AggregateRepository<ProductAggregate>>();
-builder.Services.AddSingleton<IReadRepository<ProductReadModel>, ProductReadRepository>();
+//builder.Services.AddSingleton<AggregateRepository<ProductAggregate>>();
+//builder.Services.AddSingleton<IReadRepository<ProductReadModel>, ProductReadRepository>();
 
 // This will automatically register all events to corresponding event handlers based on convention
 // <<EVENT_NAME>>Event => <<EVENT_NAME>>EventHandler
-builder.Services.AddEventListener<ProductReadModel>(typeof(ProductReadModel).Assembly);
+//builder.Services.AddEventListener<ProductReadModel>(typeof(ProductReadModel).Assembly);
 
 // Alternatively, events can be manually bound to event handlers by doing:
 //builder.Services.AddSingleton<IEventListener, EventListener<ProductReadModel>>(provider =>
@@ -49,7 +51,7 @@ builder.Services.AddEventListener<ProductReadModel>(typeof(ProductReadModel).Ass
 //    return eventListener;
 //});
 
-builder.Services.AddHostedService<EventListenerBackgroundService>();
+//builder.Services.AddHostedService<EventListenerBackgroundService>();
 
 var app = builder.Build();
 

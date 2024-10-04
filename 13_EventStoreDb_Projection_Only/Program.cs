@@ -2,7 +2,6 @@
 using Domain.Projections;
 using Domain.Read;
 using EventStore.Client;
-using Framework.Core;
 using Framework.Impl;
 using Framework.Impl.EventStore;
 

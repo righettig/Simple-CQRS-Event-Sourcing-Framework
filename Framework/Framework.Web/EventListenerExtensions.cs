@@ -9,27 +9,11 @@ public static class EventListenerExtensions
 {
     public static IServiceCollection AddEventListener<TReadModel>(
         this IServiceCollection services,
-        Assembly assembly) where TReadModel : class
-    {
-        services.AddSingleton<IEventListener, EventListener<TReadModel>>(provider =>
-        {
-            var readRepository = provider.GetRequiredService<IReadRepository<TReadModel>>();
-            var eventListener = new EventListener<TReadModel>(readRepository);
-
-            // Register events and handlers in the same assembly
-            RegisterEventHandlers(eventListener, assembly, assembly);
-
-            return eventListener;
-        });
-
-        return services;
-    }
-
-    public static IServiceCollection AddEventListener<TReadModel>(
-        this IServiceCollection services,
         Assembly eventAssembly,
-        Assembly handlerAssembly) where TReadModel : class
+        Assembly? handlerAssembly = null) where TReadModel : class
     {
+        handlerAssembly ??= eventAssembly;
+
         services.AddSingleton<IEventListener, EventListener<TReadModel>>(provider =>
         {
             var readRepository = provider.GetRequiredService<IReadRepository<TReadModel>>();
@@ -44,12 +28,40 @@ public static class EventListenerExtensions
         return services;
     }
 
-    private static void RegisterEventHandlers<TReadModel>(
-        EventListener<TReadModel> eventListener,
-        Assembly eventAssembly,
-        Assembly handlerAssembly) where TReadModel : class
+    public static IServiceCollection AddEventListener(
+        this IServiceCollection services,
+        Assembly assembly)
     {
-        // Find all event types in the event assembly that match the naming convention
+        var readModelType = assembly.GetTypes()
+            .FirstOrDefault(t => typeof(IReadModel).IsAssignableFrom(t) && !t.IsAbstract);
+
+        if (readModelType == null)
+        {
+            throw new InvalidOperationException("No IReadModel found in the provided assembly.");
+        }
+
+        var readRepositoryType = typeof(IReadRepository<>).MakeGenericType(readModelType);
+        var eventListenerType = typeof(EventListener<>).MakeGenericType(readModelType);
+
+        services.AddSingleton(typeof(IEventListener), provider =>
+        {
+            var readRepository = provider.GetRequiredService(readRepositoryType);
+            var eventListener = Activator.CreateInstance(eventListenerType, readRepository);
+
+            // Register events and handlers in the same assembly
+            RegisterEventHandlers(eventListener, assembly, assembly);
+
+            return eventListener;
+        });
+
+        return services;
+    }
+
+    private static void RegisterEventHandlers(
+        object eventListener,
+        Assembly eventAssembly,
+        Assembly handlerAssembly)
+    {
         var eventTypes = eventAssembly.GetTypes()
             .Where(t => t.Name.EndsWith("Event")
                         && !t.IsAbstract
@@ -59,19 +71,11 @@ public static class EventListenerExtensions
 
         foreach (var eventType in eventTypes)
         {
-            // Find the corresponding handler in the handler assembly based on naming convention
-            var handlerName = eventType.Name
-                .Substring(0, eventType.Name.LastIndexOf("Event")) + "EventHandler";
-
-            var handlerType = handlerAssembly.GetTypes()
-                .FirstOrDefault(t => t.Name == handlerName && !t.IsAbstract);
-
-            Console.WriteLine($"{eventType.Name} -> {handlerName}");
+            var handlerType = FindHandlerForEvent(handlerAssembly, eventType);
 
             if (handlerType != null)
             {
-                // Use reflection to invoke the Bind method
-                var bindMethod = typeof(EventListener<TReadModel>)
+                var bindMethod = eventListener.GetType()
                     .GetMethod("Bind")
                     ?.MakeGenericMethod(eventType, handlerType);
 
@@ -79,8 +83,24 @@ public static class EventListenerExtensions
             }
             else
             {
-                Console.WriteLine($"Cannot find {handlerName}.");
+                Console.WriteLine($"Cannot find handler for {eventType.Name}.");
             }
         }
+    }
+
+    private static void RegisterEventHandlers<TReadModel>(
+        EventListener<TReadModel> eventListener,
+        Assembly eventAssembly,
+        Assembly handlerAssembly) where TReadModel : class
+    {
+        RegisterEventHandlers(eventListener, eventAssembly, handlerAssembly);
+    }
+
+    private static Type FindHandlerForEvent(Assembly handlerAssembly, Type eventType)
+    {
+        var handlerName = string.Concat(eventType.Name.AsSpan(0, eventType.Name.LastIndexOf("Event")), "EventHandler");
+
+        return handlerAssembly.GetTypes()
+                              .FirstOrDefault(t => t.Name == handlerName && !t.IsAbstract);
     }
 }
