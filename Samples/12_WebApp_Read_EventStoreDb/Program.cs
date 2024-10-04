@@ -2,10 +2,7 @@ using Domain.Events;
 using Domain.Projections;
 using Domain.Read;
 using Domain.Read.Queries.Handlers;
-using EventStore.Client;
 using Framework.Core;
-using Framework.Impl;
-using Framework.Impl.EventStore;
 using Framework.Web;
 
 /**
@@ -25,13 +22,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<ProductQueryHandler>();
 });
 
-var settings = EventStoreClientSettings.Create("esdb://localhost:2113?tls=false");
-var eventStoreClient = new EventStoreClient(settings);
-var eventStore = new EventStoreDb(eventStoreClient);
+builder.Services.AddEventStore("esdb://localhost:2113?tls=false");
 
 builder.Services.RegisterHandlers(typeof(ProductCreatedEventHandler).Assembly);
 
-builder.Services.AddSingleton<IEventStore>(eventStore);
 builder.Services.AddSingleton<IReadRepository<ProductReadModel>, ProductReadRepository>();
 
 builder.Services.AddEventListener<ProductReadModel>(

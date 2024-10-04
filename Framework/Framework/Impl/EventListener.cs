@@ -46,6 +46,8 @@ public class EventListener<TReadModel> : IEventListener where TReadModel : class
         {
             var handlerInstance = (THandler)Activator.CreateInstance(typeof(THandler), _readRepository);
             _handlers[eventType] = e => handlerInstance.Handle((TEvent)e);
+
+            Console.WriteLine($"Registered handler for {eventType} -> {handlerInstance}");
         }
     }
 

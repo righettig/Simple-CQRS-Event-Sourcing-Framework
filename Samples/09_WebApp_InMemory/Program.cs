@@ -2,7 +2,6 @@ using Domain.Aggregates;
 using Domain.Read;
 using Framework.Core;
 using Framework.Impl;
-using Framework.Impl.InMemory;
 using Framework.Web;
 
 /**
@@ -22,7 +21,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
 });
 
-builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
+builder.Services.AddEventStore(); // use an in-memory implementation of IEventStore
 
 builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 

@@ -1,11 +1,7 @@
 using Domain.Aggregates;
 using Domain.Read;
-using Domain.Write.Events;
-using Domain.Write.Events.Handlers;
-using EventStore.Client;
 using Framework.Core;
 using Framework.Impl;
-using Framework.Impl.EventStore;
 using Framework.Web;
 
 /**
@@ -26,11 +22,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
 });
 
-var settings = EventStoreClientSettings.Create("esdb://localhost:2113?tls=false");
-var eventStoreClient = new EventStoreClient(settings);
-var eventStore = new EventStoreDb(eventStoreClient);
-
-builder.Services.AddSingleton<IEventStore>(eventStore);
+builder.Services.AddEventStore("esdb://localhost:2113?tls=false");
 
 builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 
@@ -42,17 +34,9 @@ builder.Services.AddEventListener<ProductReadModel>(typeof(ProductReadModel).Ass
 builder.Services.AddHostedService<EventListenerBackgroundService>();
 
 // The background service will only process a subset of all the events
-//builder.Services.AddHostedService(provider =>
-//{
-//    var eventListener = provider.GetRequiredService<IEventListener>();
-//    var eventStore = provider.GetRequiredService<IEventStore>();
-
-//    // events that do NOT start with "my_domain_products" will be ignored.
-//    // Events are saved with the namespace prefixed so the match is based on the class namespace.
-//    var eventListenerBackgroundService = new EventListenerBackgroundService(eventListener, eventStore, "my_domain_products");
-
-//    return eventListenerBackgroundService;
-//});
+// events that do NOT start with "my_domain_products" will be ignored.
+// Events are saved with the namespace prefixed so the match is based on the class namespace.
+//builder.Services.AddEventListenerBackgroundService("my_domain_products");
 
 var app = builder.Build();
 

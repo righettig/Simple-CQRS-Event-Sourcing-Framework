@@ -1,8 +1,5 @@
 using Domain.Aggregates;
-using EventStore.Client;
-using Framework.Core;
 using Framework.Impl;
-using Framework.Impl.EventStore;
 using Framework.Web;
 
 /**
@@ -22,13 +19,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<ProductAggregate>();
 });
 
-var settings = EventStoreClientSettings.Create("esdb://localhost:2113?tls=false");
-var eventStoreClient = new EventStoreClient(settings);
-var eventStore = new EventStoreDb(eventStoreClient);
+builder.Services.AddEventStore("esdb://localhost:2113?tls=false");
 
 builder.Services.RegisterHandlers(typeof(ProductAggregate).Assembly);
 
-builder.Services.AddSingleton<IEventStore>(eventStore);
 builder.Services.AddSingleton<AggregateRepository<ProductAggregate>>();
 
 var app = builder.Build();
